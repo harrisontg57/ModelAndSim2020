@@ -1,0 +1,26 @@
+Tim Harrison (tharrison21@student.gsu.edu)
+
+I opted to model the bridge segment and associated light(s) as one atom model rather than coupling two separate models together.
+Originally I attempted to have only three states 'WestBoundGreen', 'EastBoundGreen', and 'Switch' however this was obviously flawed.
+Instead I opted for 4 states, recognizing both west and east bound green phases with and without cars on the bridge.
+
+For my deltext() function (triggered by the arrive of a new car) after checking which direction was green
+I checked for whether a car was already on the bridge and added the new car to the appropriate east or west bound queue if the bridge was in use.
+If the bridge was not in use and was green for the direction of the new car I added a new event phase indicating a car was on the bridge in
+that direction which would expire after the cars travel time.
+
+For my delta internal function (triggered by a car reaching the end of the bridge segment or a traffic light change) for each direction I first checked if the phase
+indicated there was a car on the bridge, if this was true I then checked that there was enough time left on the traffic light and if there were cars
+in the queue, if both were true I could simply remove the top car from the queue and hold the bridge segment in a car active state for the car travel time.
+Alternatively if the queue was empty or the light did not have enough time left I set the phase back to it's direction being green with no cars for the remaining
+traffic signal time.
+If my phase check indicated there was no car on the bridge in it's given direction that meant the internal delta function had been triggered by the traffic
+light expiring and therefore I could reset it to either hold in the opposite direction's no car phase for the default traffic light time or, if a car was in the
+queue, it could be held in the opposite-direction-with-a-car phase.
+
+Because my external delta function could only add cars to the appropriate queue and my internal delta could only remove said cars I was able to do without a
+confluence function as DEVSJAVA defaults to running the external function before the internal function when both occur at the same instant.
+(Were it the other way around errors would have occurred with empty car queues being requested to return their top value)
+
+As an internal delta function only got called in one of the two car-on-bridge phases when a car had completed it's journey my out function only had to check
+for those two phases and create an appropriate car-out message depending on the travel direction.
