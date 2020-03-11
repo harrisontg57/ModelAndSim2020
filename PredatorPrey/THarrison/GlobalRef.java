@@ -17,6 +17,7 @@ public class GlobalRef {
   protected static int xDim;
   protected static int yDim;
   protected static GlobalRef _instance=null;
+  public Random r = new Random(1234576543);
 
   public String[][] state;
   public SheepGrassCell[][] cell_ref;

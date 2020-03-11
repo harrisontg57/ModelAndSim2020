@@ -15,8 +15,8 @@ import java.io.*;
 import twoDCellSpace.*;
 
 
-import genDevs.simulation.heapSim.HeapCoord;
-import genDevs.simulation.special.*;
+//import genDevs.simulation.heapSim.HeapCoord;
+//import genDevs.simulation.special.*;
 
 public class SheepGrassCellSpace extends TwoDimCellSpace {
 
@@ -25,7 +25,7 @@ private int senario;
 protected Random r;
 public int sheep_count = 0;
 public ArrayList<Sheep> sheeps = new ArrayList<Sheep>();
-protected DEVSQueue unborn = new DEVSQueue();;
+protected DEVSQueue unborn = new DEVSQueue();
 
 public GlobalRef grid;
 	public SheepGrassCellSpace()
@@ -37,7 +37,7 @@ public GlobalRef grid;
 	public SheepGrassCellSpace(String name)
 	{
 		super(name, 30, 30);
-		senario = 5;
+		senario = 3;
 		SheepGrassConst();
 	}
 
@@ -45,90 +45,78 @@ public GlobalRef grid;
 
 		grid = GlobalRef.getInstance();
 		grid.setDim(31,31);
-
+		//System.out.println(this.xDimCellspace + " " + xDimCellspace + "," + this.yDimCellspace + " " + yDimCellspace);
 		for(int x = 0; x <= this.xDimCellspace; x++) {
 			for(int y = 0; y <= this.yDimCellspace; y++) {
 				SheepGrassCell c = new SheepGrassCell(x,y,this);
+				//c.setTwoDimSpaceSize(30,30);
+				c.setPos();
 				addCell(c,x,y);
 				grid.addCell(c,x,y);
 			}
 		}
-		loadSheep();
+		//loadSheep();
 		r = new Random(1234576543);
-		doNeighborToNeighborCoupling();
-		DoBoundaryToBoundaryCoupling();
+
+
 		coupleOneToAll(this, "stop", "stop");
     coupleOneToAll(this, "start", "start");
 
-		CellGridPlot t = new CellGridPlot("SheepGrassCellSpace", 0.1,
-                                      "", 400, "", 400);
-
+		CellGridPlot t = new CellGridPlot("SheepGrassCellSpace", 0.1, "", 600, "", 600);
+		t.setSpaceSize(100,100);
     t.setCellSize(10);
-    t.setCellGridViewLocation(570, 100);
+    //t.setCellGridViewLocation(0, 0);
     add(t);
     // t.setHidden(false);
 		coupleAllTo("outDraw", t, "drawCellToScale");
 
+		//hideAll();
+
 		switch(senario) {
       case 1:
-				grid.cell_ref[13][13].setMode("grass");
+				grid.cell_ref[26][26].setMode("grass");
         break;
       case 2:
 				grid.cell_ref[r.nextInt(30)][r.nextInt(30)].setMode("grass");
 				grid.cell_ref[r.nextInt(30)][r.nextInt(30)].setMode("grass");
         break;
 			case 3:
-				Sheep k = makeSheep(13,13);
-				k.initialize();
+				Sheep k = new Sheep("Sheep_0", 1,1);
+				SheepGrassCell cc = (SheepGrassCell)withId(1,1);
+				cc.setMode("sheep");
+				cc.mySheep = k;
+				add(k);
+				//k.setHidden(true);
+				k.setPos();
+				coupleAllTo("outCoord", k, "in");
+
+				addCoupling(k, "outDraw", t, "drawCellToScale");
+				addCoupling(this, "start", k, "start");
+				//k.initialize();
 			//	add(k);
 	      break;
 			case 4:
-				Sheep k1 = makeSheep(13,13);
-				Sheep k2 = makeSheep(3,20);
-				k1.initialize();
-				k2.initialize();
+			//	Sheep k1 = makeSheep(13,13);
+			//	Sheep k2 = makeSheep(3,20);
+			//	k1.initialize();
+		//		k2.initialize();
 				//add(k1);
 				//add(k2);
 		    break;
 			case 5:
+			//make a ton of sheep and add couplings but store them off grid
 				grid.cell_ref[11][13].setMode("grass");
 				grid.cell_ref[12][13].setMode("grass");
-				Sheep k3 = makeSheep(13,13);
+				//Sheep k3 = makeSheep(13,13);
 				//k3.alive = true;
-				k3.initialize();
+				//k3.initialize();
 				//add(k3);
 				break;
     }
+		doNeighborToNeighborCoupling();
+		DoBoundaryToBoundaryCoupling();
+	}
 
-	}
-	public void loadSheep() {
-		int max = this.xDimCellspace * this.yDimCellspace * 3; //Make it a lot * this.yDimCellspace;
-		for (int jk = 0; jk <= max; jk++) {
-			Sheep k = new Sheep(getSheepCountString(), 0, 0);
-			addSheep();
-			add(k);
-			//System.out.println(k);
-			unborn.add(k);
-		}
-	}
-	public Sheep makeSheep(int x, int y) {
-		grid.state[x][y] = "sheep";
-		Sheep k = (Sheep)unborn.first();
-		unborn.remove();
-
-		SheepGrassCell cc = grid.cell_ref[x][y];
-		cc.sheep = true;
-		cc.grass = false;
-//		System.out.println(cc + "   k");
-//		Sheep k = new Sheep(getSheepCountString(), x, y);
-//		addSheep();
-		cc.mySheep = k;
-//		sheeps.add(k);
-//		add(k);
-		//k.initialize();
-//		System.out.println(cc +" "+ cc.mySheep +"   ok");
-		return k;
-	}
 
 	public void addSheep() {
 		sheep_count = sheep_count + 1;

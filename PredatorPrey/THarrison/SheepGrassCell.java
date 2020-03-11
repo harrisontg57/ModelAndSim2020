@@ -38,7 +38,7 @@ public class SheepGrassCell extends TwoDimCell {
     myLoc[0] = x;
     myLoc[1] = y;
     world = g;
-    addInport("inn"); //For Sheep
+  //  addInport("inn"); //For Sheep
 	}
 
   public void setMode(String s) {
@@ -74,8 +74,8 @@ public class SheepGrassCell extends TwoDimCell {
       //FIX LATER
       //create sheep instance
       //mySheep = new Sheep(world.getSheepCountString(), myLoc[0], myLoc[1]);
-    //  System.out.println(mySheep);
-      holdIn("newsheep", 0); //change time to mySheep.getNextEvent()
+      System.out.println(mySheep);
+      holdIn("newsheep", 1.5); //change time to mySheep.getNextEvent()
     }
     //System.out.println(this);
   }
@@ -88,36 +88,17 @@ public class SheepGrassCell extends TwoDimCell {
 
       //String inn = x.read(i).toString();
       content c = x.read(i);
-      if (c.getValue() instanceof Sheep) {
-
-          mySheep = (Sheep)c.getValue();
-          System.out.println(mySheep.name + " SHEEEP " + mySheep + " " + mySheep.birth + mySheep.alive + " " + mySheep.rep);
-          if (mySheep.birth && mySheep.alive) {
-            System.out.println(mySheep.name + " SHEEEP BIRTHHHHH " + mySheep);
-            mySheep.birth = false;
-            holdIn("birth", 0);
-          } else if (mySheep.phaseIs("living")) {
-            sheep = true;
-            if (grass) {
-              mySheep.feed();
-              grass = false;
-            }
-            holdIn("newsheep", 0);
-        } else if (mySheep.phaseIs("dead")) {
-          System.out.println(mySheep.name + " SHEEEP DEAD " + this);
-          sheep = false;
-          mySheep = null;
-          holdIn("clear", 0);
-        }
-
-      } else {
       String inn = c.toString();
       //System.out.println(inn);
+    //  System.out.println("HERE: " + c);
+    //System.out.println(c);
       if (inn.contains("grow")) {
-        //System.out.println("ok");
+        //System.out.println(c.getValue());
         grass = true;
         holdIn("grass", repR);
-      } }
+      } else if (false) { //Change to c.getValue() == type Sheep??
+          System.out.println(c.getValue());
+      }
 
     }
 
@@ -133,24 +114,6 @@ public class SheepGrassCell extends TwoDimCell {
       //System.out.println(n);
       holdIn("grass", repR);
     }
-    else if (phaseIs("sheep")){
-      sheep = false;
-      mySheepSend = mySheep;
-      mySheep = null;
-      //mySheepSend.setSigma(mySheepSend.getSigma() - 1.5);
-      holdIn("moved", 0);
-    } else if (phaseIs("moved")) {
-      //passivateIn("clear");
-      sheep = false;
-      holdIn("clear", 0);
-    }
-    else if (phaseIs("newsheep")){
-      sheep = true;
-      holdIn("sheep", 1.5);
-    } else if (phaseIs("birth")) {
-      sheep = true;
-      holdIn("sheep", 1.5);
-    }
   }
 
 //  public void deltcon(double e, message x) {
@@ -160,13 +123,7 @@ public class SheepGrassCell extends TwoDimCell {
   public message out() {
     message m = super.out();
 //    System.out.println("MSG " + this + "  " + getSimulationTime() + ": " + this.myLoc[0] + "," + this.myLoc[1] + " mySheep:" + mySheep + "," + sheep);
-    if (phaseIs("newsheep")) {
-      //System.out.println(mySheep.getName() + " NEWEWW " + this + "  " + getSimulationTime() + ": " + this.myLoc[0] + "," + this.myLoc[1] + " :" + mySheep + mySheep.birth);
-      m.add(makeContent("outDraw", new DrawCellEntity("drawCellToScale",
-          x_pos, y_pos, Color.blue, Color.blue)));
-    } else if (phaseIs("grass")) {
-  //    m.add(makeContent("outDraw", new DrawCellEntity("drawCellToScale",
-  //        x_pos, y_pos, Color.green, Color.green)));
+    if (phaseIs("grass")) {
 
       neighbors = new ArrayList();
       for (int n = 0; n < 8; n++) {
@@ -186,80 +143,26 @@ public class SheepGrassCell extends TwoDimCell {
   } else if (phaseIs("clear")) {
     //  m.add(makeContent("outDraw", new DrawCellEntity("drawCellToScale",
     //      x_pos, y_pos, Color.white, Color.white)));
-    } else if (phaseIs("moved")){
-      sheep = false;
-      System.out.println("??????" + mySheepSend + " " + mySheepSend.name);
-      neighbors = new ArrayList();
-      for (int n = 0; n < 8; n++) {
-        int[] neighbor = world.getNeighborXYCoord(this, n);
-        if (world.grid.hasGrass(neighbor)) {
-          neighbors.add(n);
-        }
-      }
-      if (!neighbors.isEmpty()) {
-        int nn = world.r.nextInt(neighbors.size());
-        int loc = (int)neighbors.get(nn);
-
-        m.add(makeContent("out" + nhood[loc], mySheepSend));
-      } else {
-        neighbors = new ArrayList();
-        for (int nm = 0; nm < 8; nm++) {
-          int[] nneighbor = world.getNeighborXYCoord(this, nm);
-          if (world.grid.isEmpty(nneighbor)) {
-            neighbors.add(nm);
-          }
-        }
-        if (!neighbors.isEmpty()) {
-          int nn = world.r.nextInt(neighbors.size());
-          int loc = (int)neighbors.get(nn);
-          m.add(makeContent("out" + nhood[loc], mySheepSend));
-        }
-
-      }
-      //mySheep = null;
-    } else if (phaseIs("birth")){
-
-      neighbors = new ArrayList();
-      ArrayList nDirection = new ArrayList();
-      for (int n = 0; n < 8; n++) {
-        int[] neighbor = world.getNeighborXYCoord(this, n);
-        if (world.grid.hasNoSheep(neighbor)) {
-          neighbors.add(neighbor);
-          nDirection.add(n);
-        }
-      }
-      if (!neighbors.isEmpty()) {
-        int nn = world.r.nextInt(neighbors.size());
-        int[] loc = (int[])neighbors.get(nn);
-        Sheep baby = world.makeSheep(loc[0],loc[1]);
-        //world.add(baby);
-        //baby.alive = true;
-        baby.initialize();
-        //baby.holdIn("living",0);
-        m.add(makeContent("out" + nhood[(int)nDirection.get(nn)], baby));
-      }
     }
 
-    if (false) {
-      //System.out.println("STILL " + this + "  " + getSimulationTime() + ": " + this.myLoc[0] + "," + this.myLoc[1]);
-      m.add(makeContent("outDraw", new DrawCellEntity("drawCellToScale",
-          x_pos, y_pos, Color.blue, Color.blue)));
-    } else if (grass) {
+    if (grass) {
+      System.out.println("Draw Message Grass " + x_pos + "," + y_pos);
       m.add(makeContent("outDraw", new DrawCellEntity("drawCellToScale",
               x_pos, y_pos, Color.green, Color.green)));
+    }else if (sheep) {
+    //  System.out.println("CLEAR ");
+    //  m.add(makeContent("outDraw", new DrawCellEntity("drawCellToScale",
+    //      x_pos, y_pos, Color.red, Color.red)));
+      m.add(makeContent("outCoord", new entity("sheep")));
+    //  m.add(makeContent("outNE", new entity("sheep")));
+      //System.out.println(m);
     } else if (!sheep && !grass) {
       //System.out.println("CLEAR " + this + "  " + getSimulationTime() + ": " + this.myLoc[0] + "," + this.myLoc[1]);
-      m.add(makeContent("outDraw", new DrawCellEntity("drawCellToScale",
-          x_pos, y_pos, Color.white, Color.white)));
+      //m.add(makeContent("outDraw", new DrawCellEntity("drawCellToScale",
+      //    x_pos, y_pos, Color.white, Color.white)));
     }
 
     return m;
   }
-
-//  public String toString(){
-//    String ss = new String();
-//    ss = "Grass:" + this.grass + " Sheep:" + this.sheep;
-//    return ss;
-//  }
 
 }

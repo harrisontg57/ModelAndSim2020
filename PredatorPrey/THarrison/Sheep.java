@@ -26,7 +26,7 @@ public class Sheep extends TwoDimCell{
   private String[] nhood = new String[8];
   public boolean birth = false;
   public boolean alive = true;
-  public String name;
+  //public String name;
 
   public Sheep(String name, int x, int y)
 	{
@@ -34,8 +34,10 @@ public class Sheep extends TwoDimCell{
     location = new int[2];
     location[0] = x;
     location[1] = y;
-    this.name = name;
-    addOutport("outputt");
+    //this.name = name;
+  //  this.setPos();
+    addInport("in");
+    addTestInput("in", new Pair(new Integer(33), new Integer(35)));
 	}
 
   public void initialize() {
@@ -53,41 +55,61 @@ public class Sheep extends TwoDimCell{
     rep = repT;
     birth = false;
     alive = true;
-    holdIn("living", 1.5);
+    holdIn("waitForDir", 0);
+
+  }
+
+  public int[] getDirectionToward(Pair inpair) {
+    Integer i = (Integer) inpair.getKey();
+    Integer j = (Integer) inpair.getValue();
+    int[] dir = {
+        i.intValue() - xcoord,
+        j.intValue() - ycoord
+    };
+    return dir;
+  }
+
+  public void changeCoordNPos(int[] dir) {
+    setCoordNPos(xcoord + dir[0], ycoord + dir[1]);
+  }
+
+  public void move(Pair inpair, int step) {
+    int[] dir = getDirectionToward(inpair);
+    dir[0] = step * dir[0];
+    dir[1] = step * dir[1];
+    changeCoordNPos(dir);
+  }
+
+  public void deltext(double e, message x) {
+    Continue(e);
+    if (somethingOnPort(x, "start")) {
+      System.out.println("Start");
+      holdIn("living", 0);
+    }
+    if (somethingOnPort(x, "in")) {
+      System.out.println("OUT RECIEVED ############################################# ");
+      holdIn("living", 0);
+    }
+
   }
 
   public void deltint() {
-  //  System.out.println(name + " Sheep Self " + getPhase() + life + " " + this.getSigma() + " " + rep);
-    if (phaseIs("living")) {
-  //    System.out.println(name + " Sheep Moves " + life + " " + this.getSigma() + " " + rep);
-      life = life - moveT;
-      rep = rep - moveT;
-      if (life <= 0) {
-  //      System.out.println(name + " Sheep Dies");
-        alive = false;
-        passivateIn("dead"); //Trigger new death action
-      } else {
-
-      }
-      if (rep <= 0) {
-        rep = repT;
-        birth = true;
-      }
-      holdIn("living", moveT);
+//    passivateIn("living");
+    if (phaseIs("waitForDir")) {
+      holdIn("living", 1.5);
     }
   }
 
 
   public message out() {
     message m = super.out();
-
+    if (phaseIs("living")) {
+    //  System.out.println("Draw Message Sheep " + x_pos + "," + y_pos);
+      m.add(makeContent("outDraw", new DrawCellEntity("drawCellToScale",
+          x_pos, y_pos, Color.red, Color.red)));
+    }
+  //  System.out.println(m);
     return m;
-  }
-
-  public void feed() {
-    //this.setSigma(lifeT);
-    life = lifeT;
-  //  holdIn("living", moveT);
   }
 
 }
